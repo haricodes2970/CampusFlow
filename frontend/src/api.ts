@@ -1,4 +1,13 @@
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000/api';
+const rawApiBase = import.meta.env.VITE_API_BASE;
+
+if (!rawApiBase && import.meta.env.PROD) {
+  throw new Error(
+    "CRITICAL CONFIGURATION ERROR: VITE_API_BASE environment variable is not defined in production build. " +
+    "Please configure VITE_API_BASE in your Vercel project settings pointing to your Render backend API (e.g., https://campusflow-a9hq.onrender.com/api)."
+  );
+}
+
+const API_BASE = rawApiBase || 'http://localhost:8000/api';
 
 async function fetchJson<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
