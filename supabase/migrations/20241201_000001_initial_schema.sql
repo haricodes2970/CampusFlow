@@ -152,26 +152,43 @@ ALTER TABLE sections ENABLE ROW LEVEL SECURITY;
 ALTER TABLE section_subject_requirements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE timetable_sessions ENABLE ROW LEVEL SECURITY;
 
--- RLS Policies: For demo/development, allow all operations for authenticated users
--- In production, these should be restricted based on authentication/authorization
-CREATE POLICY "Allow all for authenticated users" ON colleges FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all for authenticated users" ON departments FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all for authenticated users" ON rooms FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all for authenticated users" ON faculty FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all for authenticated users" ON faculty_availability FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all for authenticated users" ON subjects FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all for authenticated users" ON sections FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all for authenticated users" ON section_subject_requirements FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all for authenticated users" ON timetable_sessions FOR ALL TO authenticated USING (true) WITH CHECK (true);
+-- RLS Policies: Authenticated users (service role / logged-in users) have full access
+-- Anonymous (anon) users have read-only access for public data
+-- NO anonymous write access - all writes require authentication
 
--- Also allow anon key for demo purposes (read-only for most, write for sessions)
+-- Colleges: authenticated full access, anon read-only
+CREATE POLICY "Allow authenticated full access" ON colleges FOR ALL TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "Allow anon read" ON colleges FOR SELECT TO anon USING (true);
+
+-- Departments: authenticated full access, anon read-only
+CREATE POLICY "Allow authenticated full access" ON departments FOR ALL TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "Allow anon read" ON departments FOR SELECT TO anon USING (true);
+
+-- Rooms: authenticated full access, anon read-only
+CREATE POLICY "Allow authenticated full access" ON rooms FOR ALL TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "Allow anon read" ON rooms FOR SELECT TO anon USING (true);
+
+-- Faculty: authenticated full access, anon read-only
+CREATE POLICY "Allow authenticated full access" ON faculty FOR ALL TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "Allow anon read" ON faculty FOR SELECT TO anon USING (true);
+
+-- Faculty availability: authenticated full access, anon read-only
+CREATE POLICY "Allow authenticated full access" ON faculty_availability FOR ALL TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "Allow anon read" ON faculty_availability FOR SELECT TO anon USING (true);
+
+-- Subjects: authenticated full access, anon read-only
+CREATE POLICY "Allow authenticated full access" ON subjects FOR ALL TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "Allow anon read" ON subjects FOR SELECT TO anon USING (true);
+
+-- Sections: authenticated full access, anon read-only
+CREATE POLICY "Allow authenticated full access" ON sections FOR ALL TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "Allow anon read" ON sections FOR SELECT TO anon USING (true);
+
+-- Section subject requirements: authenticated full access, anon read-only
+CREATE POLICY "Allow authenticated full access" ON section_subject_requirements FOR ALL TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "Allow anon read" ON section_subject_requirements FOR SELECT TO anon USING (true);
+
+-- Timetable sessions: authenticated full access, anon read-only
+-- No anonymous write access - all schedule modifications require authentication
+CREATE POLICY "Allow authenticated full access" ON timetable_sessions FOR ALL TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "Allow anon read" ON timetable_sessions FOR SELECT TO anon USING (true);
-CREATE POLICY "Allow anon write sessions" ON timetable_sessions FOR INSERT, UPDATE, DELETE TO anon USING (true) WITH CHECK (true);
