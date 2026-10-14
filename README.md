@@ -110,26 +110,37 @@ Open `http://localhost:5173` in your browser.
 
 ## Deployment
 
-### Vercel (Frontend + Serverless API)
+### Vercel (Frontend Only — Static Build)
 1. Push repository to GitHub
 2. Import project in Vercel
-3. Configure environment variables in Vercel Dashboard:
-   - `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (backend)
-   - `VITE_API_BASE` = `https://your-vercel-app.vercel.app/api` (frontend)
-4. Vercel auto-detects `vercel.json` for serverless Python function routing
+3. **Set Root Directory to `frontend`** (critical — Vercel runs commands from this directory)
+4. Vercel auto-detects Vite framework settings:
+   - Install Command: `pnpm install`
+   - Build Command: `pnpm run build`
+   - Output Directory: `dist`
+4. Configure environment variables in Vercel Dashboard:
+   - `VITE_API_BASE` = `https://your-backend.onrender.com/api` (or your Render/Railway backend URL)
 5. Deploy
 
-### Alternative: Separate Hosts
-- **Frontend**: Vercel / Netlify / Cloudflare Pages (static build from `frontend/dist`)
-- **Backend**: Railway / Render / Fly.io / AWS / GCP (Python container/VM)
-- Update `CORS_ORIGINS` in backend env to match frontend production URL
+### Backend: Render (Recommended) or Railway / Fly.io / Railway / AWS / GCP
+1. Create a new Web Service on Render connected to the GitHub repo
+2. Set **Root Directory to `backend`**
+3. Build Command: `pip install -e .`
+4. Start Command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+5. Health Check Path: `/api/health`
+6. Add environment variables in Render Dashboard:
+   - `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+   - `CORS_ORIGINS` = `https://your-frontend.vercel.app,http://localhost:5173`
+   - `DEBUG` = `false`
+7. Deploy and verify health check: `https://your-backend.onrender.com/api/health`
 
 ### Build Commands
 ```bash
-# Frontend production build
+# Frontend production build (run from repo root)
 cd frontend && pnpm run build
 
-# Backend (already importable as uvicorn app.main:app)
+# Backend (run from backend directory)
+cd backend && pip install -e .
 ```
 
 ---
