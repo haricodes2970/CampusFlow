@@ -1,76 +1,134 @@
--- CampusFlow Seed Data Migration
--- Inserts realistic demo data for development and demonstration
--- Uses ON CONFLICT to be idempotent (safe to run multiple times)
+-- CampusFlow Seed Data Migration (Corrected with Valid UUIDs)
+-- Inserts realistic demo data with valid, RFC-compliant UUID identifiers
+-- Uses ON CONFLICT on actual unique constraints for idempotency
 
--- Insert college
-INSERT INTO colleges (id, name, code) VALUES
-    ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Main Campus University', 'MAIN')
+WITH constants AS (
+    SELECT
+        '28aacd16-a4c9-5df7-b0ad-3e6791115770'::uuid AS college_main_id,
+        '6c69ad66-b901-58d8-bca5-80f4c179bc43'::uuid AS dept_cs_id,
+        '6c0142a9-62ff-5056-b6b6-b17e77846768'::uuid AS dept_ee_id,
+        '6f9957a2-85e3-516c-87bc-1750930e7741'::uuid AS dept_ma_id,
+        '98d2185f-af82-5929-bb50-3446a017b2a6'::uuid AS room_101_id,
+        '563ae681-86f1-5f8d-9a5d-746d08f0a20c'::uuid AS room_102_id,
+        '143162ae-39ff-5f16-919b-2b2eb15b28e8'::uuid AS room_201_id,
+        '9363b75d-b55c-555c-9047-cb84a0632a7f'::uuid AS room_301_id,
+        '7ce6104e-02c0-529d-ab67-4d9272ec98be'::uuid AS fac_1_id,
+        '0a3653a2-253e-51b8-a718-611a5b48946c'::uuid AS fac_2_id,
+        'fa9b81a5-c554-53ae-9f0f-3a03d79779ea'::uuid AS fac_3_id,
+        '135f9526-2479-53ea-9a9c-f8944b7803fa'::uuid AS fac_4_id,
+        '21cf24ed-9f62-54c1-810b-52e4d4c2d022'::uuid AS sub_ds_id,
+        'f769efc8-d411-5816-8ec8-2752f0801972'::uuid AS sub_os_id,
+        '4fa9b925-39b5-5309-994e-13bc6797fcc4'::uuid AS sub_ee_id,
+        '99938e86-cdb3-5231-ab8b-f840d8aae8bf'::uuid AS sub_ca_id,
+        'a9b6e6b2-f367-520e-9313-ea76de80ecf9'::uuid AS sec_cs3a_id,
+        '9fb644a1-673e-5602-bee6-b3bad94fc3e3'::uuid AS sec_ee2a_id
+)
+-- ============================================
+-- 1. COLLEGE
+-- ============================================
+INSERT INTO colleges (id, name, code)
+SELECT college_main_id, 'Main Campus University', 'MAIN' FROM constants
 ON CONFLICT (code) DO NOTHING;
 
--- Insert departments
-INSERT INTO departments (id, name, code, college_id) VALUES
-    ('dept-cs-dept-cs-dept-cs-deptcsdept', 'Computer Science & Engineering', 'CSE', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
-    ('dept-ee-dept-ee-dept-ee-depteedept', 'Electrical Engineering', 'EE', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
-    ('dept-ma-dept-ma-dept-ma-deptmadept', 'Mathematics', 'MATH', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa')
+-- ============================================
+-- 2. DEPARTMENTS
+-- ============================================
+INSERT INTO departments (id, name, code, college_id)
+SELECT dept_cs_id, 'Computer Science & Engineering', 'CSE', college_main_id FROM constants
+UNION ALL
+SELECT dept_ee_id, 'Electrical Engineering', 'EE', college_main_id FROM constants
+UNION ALL
+SELECT dept_ma_id, 'Mathematics', 'MATH', college_main_id FROM constants
 ON CONFLICT (college_id, code) DO NOTHING;
 
--- Insert rooms
-INSERT INTO rooms (id, name, building, capacity, equipment, department_id) VALUES
-    ('room-101-room-101-room-101-room101', 'Lab 101', 'Science Block', 60, ARRAY['PROJECTOR','COMPUTERS','WHITEBOARD'], 'dept-cs-dept-cs-dept-cs-deptcsdept'),
-    ('room-102-room-102-room-102-room102', 'Lecture Hall A', 'Science Block', 120, ARRAY['PROJECTOR','AUDIO_SYSTEM','WHITEBOARD'], 'dept-cs-dept-cs-dept-cs-deptcsdept'),
-    ('room-201-room-201-room-201-room201', 'EE Lab 201', 'Engineering Hall', 45, ARRAY['PROJECTOR','COMPUTERS'], 'dept-ee-dept-ee-dept-ee-depteedept'),
-    ('room-301-room-301-room-301-room301', 'Math Hall 301', 'Arts Building', 90, ARRAY['WHITEBOARD','SMART_BOARD'], 'dept-ma-dept-ma-dept-ma-deptmadept')
+-- ============================================
+-- 3. ROOMS
+-- ============================================
+INSERT INTO rooms (id, name, building, capacity, equipment, department_id)
+SELECT room_101_id, 'Lab 101', 'Science Block', 60, ARRAY['PROJECTOR','COMPUTERS','WHITEBOARD'], dept_cs_id FROM constants
+UNION ALL
+SELECT room_102_id, 'Lecture Hall A', 'Science Block', 120, ARRAY['PROJECTOR','AUDIO_SYSTEM','WHITEBOARD'], dept_cs_id FROM constants
+UNION ALL
+SELECT room_201_id, 'EE Lab 201', 'Engineering Hall', 45, ARRAY['PROJECTOR','COMPUTERS'], dept_ee_id FROM constants
+UNION ALL
+SELECT room_301_id, 'Math Hall 301', 'Arts Building', 90, ARRAY['WHITEBOARD','SMART_BOARD'], dept_ma_id FROM constants
 ON CONFLICT (id) DO NOTHING;
 
--- Insert faculty
-INSERT INTO faculty (id, name, email, qualifications, max_hours_per_week, department_id) VALUES
-    ('fac-00000001-fac1-fac1-fac00000001', 'Dr. Alan Turing', 'turing@campusflow.edu', ARRAY['Algorithms','Data Structures','AI'], 18, 'dept-cs-dept-cs-dept-cs-deptcsdept'),
-    ('fac-00000002-fac2-fac2-fac00000002', 'Prof. Grace Hopper', 'hopper@campusflow.edu', ARRAY['Operating Systems','Compilers','Data Structures'], 20, 'dept-cs-dept-cs-dept-cs-deptcsdept'),
-    ('fac-00000003-fac3-fac3-fac00000003', 'Dr. Nikola Tesla', 'tesla@campusflow.edu', ARRAY['Circuit Analysis','Electromagnetism'], 16, 'dept-ee-dept-ee-dept-ee-depteedept'),
-    ('fac-00000004-fac4-fac4-fac00000004', 'Dr. Katherine Johnson', 'johnson@campusflow.edu', ARRAY['Linear Algebra','Calculus','Differential Equations'], 20, 'dept-ma-dept-ma-dept-ma-deptmadept')
+-- ============================================
+-- 4. FACULTY
+-- ============================================
+INSERT INTO faculty (id, name, email, qualifications, max_hours_per_week, department_id)
+SELECT fac_1_id, 'Dr. Alan Turing', 'turing@campusflow.edu', ARRAY['Algorithms','Data Structures','AI'], 18, dept_cs_id FROM constants
+UNION ALL
+SELECT fac_2_id, 'Prof. Grace Hopper', 'hopper@campusflow.edu', ARRAY['Operating Systems','Compilers','Data Structures'], 20, dept_cs_id FROM constants
+UNION ALL
+SELECT fac_3_id, 'Dr. Nikola Tesla', 'tesla@campusflow.edu', ARRAY['Circuit Analysis','Electromagnetism'], 16, dept_ee_id FROM constants
+UNION ALL
+SELECT fac_4_id, 'Dr. Katherine Johnson', 'johnson@campusflow.edu', ARRAY['Linear Algebra','Calculus','Differential Equations'], 20, dept_ma_id FROM constants
 ON CONFLICT (email) DO NOTHING;
 
--- Insert faculty availability
-INSERT INTO faculty_availability (faculty_id, day_of_week, start_time, end_time) VALUES
-    -- Dr. Alan Turing: Mon/Wed/Fri 9am-5pm
-    ('fac-00000001-fac1-fac1-fac00000001', 'MONDAY', '09:00', '17:00'),
-    ('fac-00000001-fac1-fac1-fac00000001', 'WEDNESDAY', '09:00', '17:00'),
-    ('fac-00000001-fac1-fac1-fac00000001', 'FRIDAY', '09:00', '17:00'),
-    -- Prof. Grace Hopper: Tue/Thu 8am-4pm
-    ('fac-00000002-fac2-fac2-fac00000002', 'TUESDAY', '08:00', '16:00'),
-    ('fac-00000002-fac2-fac2-fac00000002', 'THURSDAY', '08:00', '16:00'),
-    -- Dr. Nikola Tesla: Mon/Wed 10am-3pm
-    ('fac-00000003-fac3-fac3-fac00000003', 'MONDAY', '10:00', '15:00'),
-    ('fac-00000003-fac3-fac3-fac00000003', 'WEDNESDAY', '10:00', '15:00'),
-    -- Dr. Katherine Johnson: Mon-Fri 9am-5pm
-    ('fac-00000004-fac4-fac4-fac00000004', 'MONDAY', '09:00', '17:00'),
-    ('fac-00000004-fac4-fac4-fac00000004', 'TUESDAY', '09:00', '17:00'),
-    ('fac-00000004-fac4-fac4-fac00000004', 'WEDNESDAY', '09:00', '17:00'),
-    ('fac-00000004-fac4-fac4-fac00000004', 'THURSDAY', '09:00', '17:00'),
-    ('fac-00000004-fac4-fac4-fac00000004', 'FRIDAY', '09:00', '17:00')
+-- ============================================
+-- 5. FACULTY AVAILABILITY
+-- ============================================
+INSERT INTO faculty_availability (faculty_id, day_of_week, start_time, end_time)
+SELECT fac_1_id, 'MONDAY', '09:00'::time, '17:00'::time FROM constants
+UNION ALL
+SELECT fac_1_id, 'WEDNESDAY', '09:00'::time, '17:00'::time FROM constants
+UNION ALL
+SELECT fac_1_id, 'FRIDAY', '09:00'::time, '17:00'::time FROM constants
+UNION ALL
+SELECT fac_2_id, 'TUESDAY', '08:00'::time, '16:00'::time FROM constants
+UNION ALL
+SELECT fac_2_id, 'THURSDAY', '08:00'::time, '16:00'::time FROM constants
+UNION ALL
+SELECT fac_3_id, 'MONDAY', '10:00'::time, '15:00'::time FROM constants
+UNION ALL
+SELECT fac_3_id, 'WEDNESDAY', '10:00'::time, '15:00'::time FROM constants
+UNION ALL
+SELECT fac_4_id, 'MONDAY', '09:00'::time, '17:00'::time FROM constants
+UNION ALL
+SELECT fac_4_id, 'TUESDAY', '09:00'::time, '17:00'::time FROM constants
+UNION ALL
+SELECT fac_4_id, 'WEDNESDAY', '09:00'::time, '17:00'::time FROM constants
+UNION ALL
+SELECT fac_4_id, 'THURSDAY', '09:00'::time, '17:00'::time FROM constants
+UNION ALL
+SELECT fac_4_id, 'FRIDAY', '09:00'::time, '17:00'::time FROM constants
 ON CONFLICT (faculty_id, day_of_week, start_time, end_time) DO NOTHING;
 
--- Insert subjects
-INSERT INTO subjects (id, code, name, required_equipment, min_room_capacity, qualified_faculty_ids, department_id) VALUES
-    ('sub-ds-sub-ds-sub-ds-subdsdsdsds', 'CS201', 'Data Structures & Algorithms', ARRAY['PROJECTOR','COMPUTERS'], 50, ARRAY['fac-00000001-fac1-fac1-fac00000001','fac-00000002-fac2-fac2-fac00000002'], 'dept-cs-dept-cs-dept-cs-deptcsdept'),
-    ('sub-os-sub-os-sub-os-subososos', 'CS301', 'Operating Systems', ARRAY['PROJECTOR','WHITEBOARD'], 100, ARRAY['fac-00000002-fac2-fac2-fac00000002'], 'dept-cs-dept-cs-dept-cs-deptcsdept'),
-    ('sub-ee-sub-ee-sub-ee-subeesubs', 'EE101', 'Circuit Analysis', ARRAY['PROJECTOR','COMPUTERS'], 40, ARRAY['fac-00000003-fac3-fac3-fac00000003'], 'dept-ee-dept-ee-dept-ee-depteedept'),
-    ('sub-ca-sub-ca-sub-ca-subcacaca', 'MA101', 'Linear Algebra & Calculus', ARRAY['WHITEBOARD'], 80, ARRAY['fac-00000004-fac4-fac4-fac00000004'], 'dept-ma-dept-ma-dept-ma-deptmadept')
+-- ============================================
+-- 6. SUBJECTS
+-- ============================================
+INSERT INTO subjects (id, code, name, required_equipment, min_room_capacity, qualified_faculty_ids, department_id)
+SELECT sub_ds_id, 'CS201', 'Data Structures & Algorithms', ARRAY['PROJECTOR','COMPUTERS'], 50, ARRAY[fac_1_id, fac_2_id], dept_cs_id FROM constants
+UNION ALL
+SELECT sub_os_id, 'CS301', 'Operating Systems', ARRAY['PROJECTOR','WHITEBOARD'], 100, ARRAY[fac_2_id], dept_cs_id FROM constants
+UNION ALL
+SELECT sub_ee_id, 'EE101', 'Circuit Analysis', ARRAY['PROJECTOR','COMPUTERS'], 40, ARRAY[fac_3_id], dept_ee_id FROM constants
+UNION ALL
+SELECT sub_ca_id, 'MA101', 'Linear Algebra & Calculus', ARRAY['WHITEBOARD'], 80, ARRAY[fac_4_id], dept_ma_id FROM constants
 ON CONFLICT (department_id, code) DO NOTHING;
 
--- Insert sections
-INSERT INTO sections (id, name, student_count, department_id) VALUES
-    ('sec-cs3a-sec-cs3a-sec-cs3a-sec3a', 'CSE 3rd Year A', 55, 'dept-cs-dept-cs-dept-cs-deptcsdept'),
-    ('sec-ee2a-sec-ee2a-sec-ee2a-sec2a', 'EE 2nd Year A', 40, 'dept-ee-dept-ee-dept-ee-depteedept')
+-- ============================================
+-- 7. SECTIONS
+-- ============================================
+INSERT INTO sections (id, name, student_count, department_id)
+SELECT sec_cs3a_id, 'CSE 3rd Year A', 55, dept_cs_id FROM constants
+UNION ALL
+SELECT sec_ee2a_id, 'EE 2nd Year A', 40, dept_ee_id FROM constants
 ON CONFLICT (id) DO NOTHING;
 
--- Insert section subject requirements
-INSERT INTO section_subject_requirements (section_id, subject_id, sessions_per_week, session_duration_minutes) VALUES
-    -- CSE 3rd Year A
-    ('sec-cs3a-sec-cs3a-sec-cs3a-sec3a', 'sub-ds-sub-ds-sub-ds-subdsdsdsds', 3, 60),  -- Data Structures: 3x 60min
-    ('sec-cs3a-sec-cs3a-sec-cs3a-sec3a', 'sub-os-sub-os-sub-os-subososos', 2, 90),  -- Operating Systems: 2x 90min
-    ('sec-cs3a-sec-cs3a-sec-cs3a-sec3a', 'sub-ca-sub-ca-sub-ca-subcacaca', 2, 60),  -- Linear Algebra: 2x 60min
-    -- EE 2nd Year A
-    ('sec-ee2a-sec-ee2a-sec-ee2a-sec2a', 'sub-ee-sub-ee-sub-ee-subeesubs', 3, 90),  -- Circuit Analysis: 3x 90min
-    ('sec-ee2a-sec-ee2a-sec-ee2a-sec2a', 'sub-ca-sub-ca-sub-ca-subcacaca', 2, 60)   -- Linear Algebra: 2x 60min
+-- ============================================
+-- 8. SECTION SUBJECT REQUIREMENTS
+-- ============================================
+INSERT INTO section_subject_requirements (section_id, subject_id, sessions_per_week, session_duration_minutes)
+SELECT sec_cs3a_id, sub_ds_id, 3, 60 FROM constants
+UNION ALL
+SELECT sec_cs3a_id, sub_os_id, 2, 90 FROM constants
+UNION ALL
+SELECT sec_cs3a_id, sub_ca_id, 2, 60 FROM constants
+UNION ALL
+SELECT sec_ee2a_id, sub_ee_id, 3, 90 FROM constants
+UNION ALL
+SELECT sec_ee2a_id, sub_ca_id, 2, 60 FROM constants
 ON CONFLICT (section_id, subject_id) DO NOTHING;
