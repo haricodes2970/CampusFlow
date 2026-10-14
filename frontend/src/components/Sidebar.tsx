@@ -31,11 +31,7 @@ export function Sidebar({ active, onChange }: Props) {
   return (
     <aside className="sidebar" role="navigation" aria-label="Main navigation">
       <div className="brand">
-        <div className="brand-mark" aria-hidden="true">C</div>
-        <div>
-          <div className="brand-name">CampusFlow</div>
-          <div className="brand-sub">Academic Admin</div>
-        </div>
+        <img src="/logo.svg" alt="CampusFlow Logo" style={{ width: '100%', maxWidth: '170px', height: 'auto', display: 'block', margin: '0 auto 6px' }} />
       </div>
 
       <nav>
