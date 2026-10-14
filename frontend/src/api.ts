@@ -1,5 +1,24 @@
 const rawApiBase = import.meta.env.VITE_API_BASE;
 
+// Non-secret build-time diagnostic log for debugging Vercel environment variable injection
+console.log("[CampusFlow Diagnostic] BUILD_MODE:", import.meta.env.MODE);
+console.log("[CampusFlow Diagnostic] PROD:", import.meta.env.PROD);
+console.log("[CampusFlow Diagnostic] VITE_API_BASE present:", Boolean(rawApiBase));
+if (rawApiBase) {
+  try {
+    const parsed = new URL(rawApiBase);
+    console.log("[CampusFlow Diagnostic] VITE_API_BASE origin:", parsed.origin);
+    console.log("[CampusFlow Diagnostic] VITE_API_BASE pathname:", parsed.pathname);
+  } catch {
+    console.log("[CampusFlow Diagnostic] VITE_API_BASE is a relative or custom path string length:", rawApiBase.length);
+  }
+} else if (import.meta.env.PROD) {
+  console.error(
+    "[CampusFlow Diagnostic] CRITICAL: VITE_API_BASE is missing in production build! " +
+    "Please verify Vercel Project Settings → Environment Variables has VITE_API_BASE configured for Production environment and redeploy without cache."
+  );
+}
+
 if (!rawApiBase && import.meta.env.PROD) {
   throw new Error(
     "CRITICAL CONFIGURATION ERROR: VITE_API_BASE environment variable is not defined in production build. " +
