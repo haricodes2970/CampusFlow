@@ -1,0 +1,28 @@
+# Render Deployment Configuration for CampusFlow Backend
+# Save as render.yaml in the backend directory or use the Render dashboard
+
+services:
+  - type: web
+    name: campusflow-api
+    runtime: python
+    buildCommand: |
+      pip install -e .
+    startCommand: |
+      uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: CORS_ORIGINS
+        value: "https://campusflow.vercel.app,http://localhost:5173"
+      - key: APP_HOST
+        value: "0.0.0.0"
+      - key: APP_PORT
+        value: "10000"
+      - key: DEBUG
+        value: "false"
+    healthCheckPath: /api/health
+    autoDeploy: true
