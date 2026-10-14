@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     debug: bool = True
     
     # CORS
-    cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
+    cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173,https://campusflowww.vercel.app,https://campusflow.vercel.app"
 
     class Config:
         env_file = ".env"
