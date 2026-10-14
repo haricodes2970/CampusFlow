@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api';
 import type { Stats, UnscheduledSession } from '../types';
-import { getSubjectCode, getSectionName } from '../utils';
 
 interface Props {
   onNavigate: (k: 'departments' | 'rooms' | 'faculty' | 'subjects' | 'sections' | 'timetable') => void;
@@ -12,22 +11,16 @@ interface Props {
 export function DashboardView({ onNavigate, onError, onSuccess }: Props) {
   const [stats, setStats] = useState<Stats | null>(null);
   const [unscheduled, setUnscheduled] = useState<UnscheduledSession[]>([]);
-  const [subjects, setSubjects] = useState<any[]>([]);
-  const [sections, setSections] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
   const loadData = async () => {
     try {
-      const [st, un, subs, secs] = await Promise.all([
+      const [st, un] = await Promise.all([
         api.stats(),
         api.getUnscheduled(),
-        api.listSubjects(),
-        api.listSections(),
       ]);
       setStats(st);
       setUnscheduled(un);
-      setSubjects(subs);
-      setSections(secs);
     } catch (e: any) {
       onError('Failed to load dashboard', e.message);
     }
@@ -55,7 +48,10 @@ export function DashboardView({ onNavigate, onError, onSuccess }: Props) {
           <h1>Dashboard & Overview</h1>
           <div className="topbar-sub">CampusFlow academic administration and automated scheduler</div>
         </div>
-        <div style={{display: 'flex', gap: 10}}>
+        <div style={{display: 'flex', gap: 10, alignItems: 'center'}}>
+          <div className="chip" style={{background: 'rgba(52,211,153,0.14)', color: '#6ee7b7', borderColor: 'rgba(52,211,153,0.3)'}}>
+            🟢 Local Demo Persistence Active
+          </div>
           <button className="btn cyan" onClick={handleGenerate} disabled={loading}>
             {loading ? 'Generating...' : '⚡ Generate Timetable'}
           </button>
@@ -104,10 +100,26 @@ export function DashboardView({ onNavigate, onError, onSuccess }: Props) {
         <div className="loading"><div className="spinner"></div>Loading dashboard metrics...</div>
       )}
 
+      {/* 3-Minute Demo Guide Box */}
+      <div className="glass panel" style={{borderColor: 'rgba(139,92,246,0.3)', background: 'rgba(139,92,246,0.04)'}}>
+        <div className="panel-head">
+          <div className="panel-title">
+            <h2>🚀 3-Minute Demo Walkthrough Guide</h2>
+          </div>
+        </div>
+        <ol style={{margin: '0 0 0 18px', padding: 0, color: 'var(--text-dim)', fontSize: '0.85rem', display: 'flex', flexDirection: 'column', gap: 6}}>
+          <li><strong>Step 1 (Dashboard):</strong> Review real-time metrics and active unscheduled conflict reports above.</li>
+          <li><strong>Step 2 (Data Management):</strong> Click any stat card or sidebar item (e.g. <em>Rooms</em> or <em>Faculty</em>) to inspect and manage core academic records.</li>
+          <li><strong>Step 3 (Scheduling Engine):</strong> Go to <em>Timetable</em> or click <strong>Generate Timetable</strong> to run the deterministic constraint solver.</li>
+          <li><strong>Step 4 (Constraint Enforcement):</strong> Notice how hard constraints (capacity, faculty availability, equipment) prevent invalid assignments and report clear reasons instead of failing silently.</li>
+          <li><strong>Step 5 (Validated Editing):</strong> Add or modify a session directly in the Timetable view and observe real-time validation feedback.</li>
+        </ol>
+      </div>
+
       <div className="glass panel">
         <div className="panel-head">
           <div className="panel-title">
-            <h2>⚠️ Unscheduled Sessions & Conflict Report</h2>
+            <h2>⚠️ Unscheduled Sessions & Constraint Explanations</h2>
           </div>
           <button className="btn sm ghost" onClick={loadData}>Refresh</button>
         </div>
